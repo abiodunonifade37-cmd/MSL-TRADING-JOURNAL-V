@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="MSL Trading Journal v8">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <title>MSL Trading Journal v8</title>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="brand">MSL Trading Journal</div>
+      <div class="version">v8 • Cloud-ready PWA</div>
+    </div>
+    <div id="connection" class="status offline">Offline cache</div>
+  </header>
+
+  <main class="shell">
+    <nav class="tabs" aria-label="Main navigation">
+      <button class="tab active" data-view="dashboard">Dashboard</button>
+      <button class="tab" data-view="trades">Trades</button>
+      <button class="tab" data-view="new">New Trade</button>
+      <button class="tab" data-view="settings">Settings</button>
+    </nav>
+
+    <section id="dashboard" class="view active">
+      <div class="hero">
+        <div>
+          <h1>Trading command center</h1>
+          <p>Record the setup. Review the execution. Let the statistics expose the truth.</p>
+        </div>
+        <button class="primary" data-go="new">+ Log Trade</button>
+      </div>
+      <div class="stats">
+        <article><span>Total Trades</span><strong id="statTrades">0</strong></article>
+        <article><span>Win Rate</span><strong id="statWinRate">0%</strong></article>
+        <article><span>Net R</span><strong id="statR">0.00R</strong></article>
+        <article><span>Profit Factor</span><strong id="statPF">0.00</strong></article>
+      </div>
+      <div class="grid2">
+        <section class="card">
+          <h2>Recent trades</h2>
+          <div id="recentTrades" class="list empty">No trades yet.</div>
+        </section>
+        <section class="card">
+          <h2>Execution model</h2>
+          <ul class="rules">
+            <li>Liquidity sweep → displacement / MSS → retracement → execution.</li>
+            <li>Premium / discount is an execution filter, not a standalone signal.</li>
+            <li>Continuation entries require your confirmation sweep / IDM condition.</li>
+            <li>Target meaningful opposing liquidity or key levels.</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <section id="trades" class="view">
+      <div class="section-head">
+        <div><h1>Trade Journal</h1><p>Search, filter and review every execution.</p></div>
+        <button class="primary" data-go="new">+ New Trade</button>
+      </div>
+      <div class="filters">
+        <input id="search" placeholder="Search pair, notes, setup...">
+        <select id="filterResult"><option value="">All results</option><option>Win</option><option>Loss</option><option>BE</option></select>
+        <select id="filterSetup"><option value="">All setups</option><option>Reversal</option><option>Continuation</option></select>
+      </div>
+      <div id="tradeTable" class="table-wrap"></div>
+    </section>
+
+    <section id="new" class="view">
+      <div class="section-head">
+        <div><h1>Log a trade</h1><p>Capture the information you will actually review later.</p></div>
+      </div>
+      <form id="tradeForm" class="form card">
+        <div class="form-grid">
+          <label>Date/time<input id="date" type="datetime-local" required></label>
+          <label>Pair / market<input id="pair" placeholder="EURUSD" required></label>
+          <label>Direction<select id="direction"><option>Long</option><option>Short</option></select></label>
+          <label>Session<select id="session"><option>London</option><option>New York</option><option>Asia</option><option>Other</option></select></label>
+          <label>Setup<select id="setup"><option>Reversal</option><option>Continuation</option></select></label>
+          <label>Liquidity swept<select id="liquidity"><option>PDH</option><option>PDL</option><option>BSL</option><option>SSL</option><option>High trend liquidity</option><option>Low trend liquidity</option><option>Equal highs</option><option>Equal lows</option><option>Other</option></select></label>
+          <label>Confirmation<select id="confirmation"><option>MSS + displacement</option><option>IDM / confirmation sweep</option><option>Both</option><option>Other</option></select></label>
+          <label>Entry zone<select id="zone"><option>Discount</option><option>Premium</option><option>Neither</option></select></label>
+          <label>Entry price<input id="entry" type="number" step="any"></label>
+          <label>Stop price<input id="stop" type="number" step="any"></label>
+          <label>Target price<input id="target" type="number" step="any"></label>
+          <label>Result<select id="result"><option>Win</option><option>Loss</option><option>BE</option></select></label>
+          <label>R multiple<input id="r" type="number" step="0.01" placeholder="e.g. 2.5"></label>
+        </div>
+        <label>Why did you take this trade?<textarea id="reason" rows="4" placeholder="Liquidity narrative, market structure, confirmation..."></textarea></label>
+        <label>Post-trade review<textarea id="review" rows="4" placeholder="What was correct? What was wrong? What will change?"></textarea></label>
+        <label>Screenshot URL (optional)<input id="screenshot" type="url" placeholder="https://..."></label>
+        <div class="form-actions"><button type="reset" class="secondary">Reset</button><button class="primary" type="submit">Save Trade</button></div>
+      </form>
+    </section>
+
+    <section id="settings" class="view">
+      <div class="section-head"><div><h1>Settings & Data</h1><p>Control storage, backups and destructive actions.</p></div></div>
+      <div class="grid2">
+        <section class="card">
+          <h2>Storage</h2>
+          <p id="storageStatus">Local-first storage is active. Cloud sync can be configured below.</p>
+          <div class="settings-actions">
+            <button id="exportBtn" class="secondary">Export JSON Backup</button>
+            <label class="file-button secondary">Import JSON Backup<input id="importInput" type="file" accept=".json,application/json" hidden></label>
+          </div>
+        </section>
+        <section class="card danger-card">
+          <h2>Clear all journal data</h2>
+          <p>This permanently removes every locally stored trade on this device. Export a backup first.</p>
+          <button id="clearBtn" class="danger">Clear All Data</button>
+        </section>
+      </div>
+      <section class="card cloud-card">
+        <h2>Optional cloud sync</h2>
+        <p>For GitHub Pages, the browser can connect directly to a hosted database such as Supabase. Do not put a service-role secret in this site.</p>
+        <div class="form-grid">
+          <label>Supabase project URL<input id="supabaseUrl" placeholder="https://your-project.supabase.co"></label>
+          <label>Supabase anon/publishable key<input id="supabaseKey" placeholder="public client key"></label>
+        </div>
+        <div class="form-actions"><button id="saveCloud" class="primary">Save Cloud Settings</button><button id="testCloud" class="secondary">Test Connection</button></div>
+        <p id="cloudMsg" class="small"></p>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
